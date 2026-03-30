@@ -6,6 +6,15 @@
 
 - Upstream: https://github.com/nfe-w/aio-dynamic-push
 
+## 个人版新增功能
+
+- 微博接口 `4xx` 异常告警：当微博查询接口返回 `4xx` 状态码时，会通过现有推送通道发送异常提醒，提示检查 `Cookie`、代理或请求频率
+- 微博异常限频：同类 `4xx` 异常默认 `6` 小时内只提醒一次，避免短时间内重复轰炸
+- 本地运行脚本适配：`start.sh` 已改为本地 `Python` 启动方式，并内置代理环境变量
+- 重启脚本修正：`restart.sh` 会先结束旧的 `main.py` 进程，再启动新进程，避免重复启动多个实例
+- `run.sh` 改为非 Docker 提示：明确提示当前仓库按本地脚本运行，不再直接执行 Docker 启动
+- 提供脱敏示例配置：仓库内使用 `config.example.yml` 作为公开示例，真实 `config.yml` 不纳入版本管理
+
 ## 原项目简介
 
 [![Docker Image](https://img.shields.io/badge/DockerHub-nfew/aio--dynamic--push-367AC7?logo=Docker&logoColor=white)](https://hub.docker.com/r/nfew/aio-dynamic-push)
