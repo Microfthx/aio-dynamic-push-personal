@@ -1,0 +1,205 @@
+common:
+  proxy_pool:
+    enable: false
+    proxy_pool_url: http://ip:port
+  push_channel:
+    send_test_msg_when_start: false
+
+query_task:
+  - name: 任务_bilibili
+    enable: true
+    type: bilibili
+    intervals_second: 60
+    begin_time: "00:00"
+    end_time: "23:59"
+    target_push_name_list:
+      - 推送通道_Bark
+      - 推送通道_Email
+      - 推送通道_NapCatQQ
+    enable_dynamic_check: true
+    enable_living_check: true
+    uid_list:
+      - 44665472
+    skip_forward: true
+    cookie: ""
+    payload: ""
+
+  - name: 任务_weibo
+    enable: true
+    type: weibo
+    intervals_second: 60
+    begin_time: "00:00"
+    end_time: "23:59"
+    target_push_name_list:
+      - 推送通道_Bark
+      - 推送通道_Email
+      - 推送通道_NapCatQQ
+    enable_dynamic_check: true
+    uid_list:
+      - 8260944415
+      - 6351589907
+      - 6060473092
+    cookie: ""
+
+  - name: 任务_xhs
+    enable: false
+    type: xhs
+    intervals_second: 300
+    begin_time: "00:00"
+    end_time: "23:59"
+    target_push_name_list:
+      - 推送通道_企业微信应用
+      - 推送通道_钉钉机器人
+    enable_dynamic_check: true
+    profile_id_list:
+      - 52d8c541b4c4d60e6c867480
+      - 5bf64788aa4b0a000114b879
+    cookie: ""
+
+  - name: 任务_douyin
+    enable: false
+    type: douyin
+    intervals_second: 30
+    begin_time: "00:00"
+    end_time: "23:59"
+    target_push_name_list:
+      - 推送通道_企业微信应用
+      - 推送通道_钉钉机器人
+    enable_dynamic_check: false
+    signature_server_url: http://ip:port
+    username_list:
+      - 示例用户1
+      - 示例用户2
+    sec_uid_list:
+      - MS4wLjABAAAAexample1
+      - MS4wLjABAAAAexample2
+    enable_living_check: true
+    douyin_id_list:
+      - example1
+      - example2
+
+  - name: 任务_douyu
+    enable: false
+    type: douyu
+    intervals_second: 300
+    begin_time: "00:00"
+    end_time: "23:59"
+    target_push_name_list:
+      - 推送通道_企业微信应用
+      - 推送通道_钉钉机器人
+    enable_living_check: true
+    room_id_list:
+      - 307876
+      - 12306
+
+  - name: 任务_huya
+    enable: false
+    type: huya
+    intervals_second: 300
+    begin_time: "00:00"
+    end_time: "23:59"
+    target_push_name_list:
+      - 推送通道_企业微信应用
+      - 推送通道_钉钉机器人
+    enable_living_check: true
+    room_id_list:
+      - "lpl"
+      - "880201"
+
+push_channel:
+  - name: 推送通道_Server酱_Turbo
+    enable: false
+    type: serverChan_turbo
+    send_key:
+
+  - name: 推送通道_Server酱_3
+    enable: false
+    type: serverChan_3
+    send_key:
+    uid:
+    tags:
+
+  - name: 推送通道_企业微信应用
+    enable: false
+    type: wecom_apps
+    corp_id:
+    agent_id:
+    corp_secret:
+
+  - name: 推送通道_企业微信机器人
+    enable: false
+    type: wecom_bot
+    key:
+
+  - name: 推送通道_钉钉机器人
+    enable: false
+    type: dingtalk_bot
+    access_token:
+
+  - name: 推送通道_飞书自建应用
+    enable: false
+    type: feishu_apps
+    app_id:
+    app_secret:
+    receive_id_type:
+    receive_id:
+
+  - name: 推送通道_飞书机器人
+    enable: false
+    type: feishu_bot
+    webhook_key:
+
+  - name: 推送通道_Telegram机器人
+    enable: false
+    type: telegram_bot
+    api_token:
+    chat_id:
+
+  - name: 推送通道_QQ机器人
+    enable: false
+    type: qq_bot
+    base_url: https://api.sgroup.qq.com
+    app_id:
+    app_secret:
+    push_target_list:
+      - guild_name: "频道1"
+        channel_name_list:
+          - "子频道11"
+          - "子频道12"
+
+  - name: 推送通道_NapCatQQ
+    enable: false
+    type: napcat_qq
+    api_url: http://127.0.0.1:3000
+    token:
+    user_id:
+    group_id:
+    at_qq: "all"
+
+  - name: 推送通道_Bark
+    enable: false
+    type: bark
+    server_url: https://api.day.app
+    key:
+
+  - name: 推送通道_Gotify
+    enable: false
+    type: gotify
+    web_server_url:
+
+  - name: 推送通道_Webhook
+    enable: false
+    type: webhook
+    webhook_url: https://example.com?title={{title}}&content={{content}}
+    request_method: GET
+
+  - name: 推送通道_Email
+    enable: false
+    type: email
+    smtp_host: smtp.example.com
+    smtp_port: 465
+    smtp_ssl: true
+    smtp_tls: false
+    sender_email:
+    sender_password:
+    receiver_email:
