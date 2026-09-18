@@ -5,14 +5,29 @@ import push_channel
 from common.logger import log
 
 
+def normalize_time(value, default):
+    if isinstance(value, int) and 0 <= value < 24 * 60:
+        return f"{value // 60:02d}:{value % 60:02d}"
+
+    normalized = str(value).strip()
+    parts = normalized.split(":")
+    if len(parts) == 2 and all(part.isdigit() for part in parts):
+        hour, minute = (int(part) for part in parts)
+        if 0 <= hour <= 23 and 0 <= minute <= 59:
+            return f"{hour:02d}:{minute:02d}"
+
+    log.warning(f"无效时间配置 {value!r}，使用默认值 {default}")
+    return default
+
+
 class QueryTask(ABC):
     def __init__(self, config):
         self.name = config.get("name", "")
         self.enable = config.get("enable", False)
         self.type = config.get("type", "")
         self.intervals_second = config.get("intervals_second", 60)
-        self.begin_time = config.get("begin_time", "00:00")
-        self.end_time = config.get("end_time", "23:59")
+        self.begin_time = normalize_time(config.get("begin_time", "00:00"), "00:00")
+        self.end_time = normalize_time(config.get("end_time", "23:59"), "23:59")
         self.target_push_name_list = config.get("target_push_name_list", [])
         self.enable_dynamic_check = config.get("enable_dynamic_check", False)
         self.enable_living_check = config.get("enable_living_check", False)

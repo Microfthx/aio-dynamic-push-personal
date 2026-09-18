@@ -7,10 +7,16 @@ HTTP_PROXY_URL="${HTTP_PROXY_URL:-http://127.0.0.1:17890}"
 HTTPS_PROXY_URL="${HTTPS_PROXY_URL:-http://127.0.0.1:17890}"
 ALL_PROXY_URL="${ALL_PROXY_URL:-socks5://127.0.0.1:17891}"
 
-if command -v python3 >/dev/null 2>&1; then
-  PYTHON_BIN="$(command -v python3)"
+if [[ -n "${AIO_PYTHON_BIN:-}" ]]; then
+  if [[ ! -x "$AIO_PYTHON_BIN" ]]; then
+    echo "Error: AIO_PYTHON_BIN is not executable: $AIO_PYTHON_BIN" >&2
+    exit 1
+  fi
+  PYTHON_BIN="$AIO_PYTHON_BIN"
 elif [[ -x "$PROJECT_DIR/.venv/bin/python" ]]; then
   PYTHON_BIN="$PROJECT_DIR/.venv/bin/python"
+elif command -v python3 >/dev/null 2>&1; then
+  PYTHON_BIN="$(command -v python3)"
 elif command -v python >/dev/null 2>&1; then
   PYTHON_BIN="$(command -v python)"
 else

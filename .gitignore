@@ -63,6 +63,9 @@ local_settings.py
 db.sqlite3
 db.sqlite3-journal
 config.yml
+config copy.yml
+config.yml.tmp
+config.yml.bak.*
 *.db
 *.db-shm
 *.db-wal
@@ -76,6 +79,7 @@ instance/
 
 # Sphinx documentation
 docs/_build/
+docs/xhs_debug_*.html
 
 # PyBuilder
 .pybuilder/

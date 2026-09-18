@@ -1,4 +1,5 @@
 import datetime
+import html
 import json
 import re
 import time
@@ -18,6 +19,65 @@ class QueryWeibo(QueryTask):
         self.cookie = config.get("cookie", "")
         self.weibo_http_error_notify_interval_seconds = 6 * 60 * 60
         self.weibo_http_error_last_notify_ts = 0
+
+    @staticmethod
+    def clean_weibo_html(value):
+        if not isinstance(value, str):
+            return ""
+        value = re.sub(r"<br\s*/?>", "\n", value, flags=re.IGNORECASE)
+        value = re.sub(r"</p\s*>", "\n", value, flags=re.IGNORECASE)
+        value = re.sub(r"<[^>]+>", "", value)
+        value = html.unescape(value).replace("\u200b", "")
+        value = re.sub(r"[ \t]+\n", "\n", value)
+        value = re.sub(r"\n{3,}", "\n\n", value)
+        return value.strip()
+
+    def get_weibo_content(self, mblog, headers):
+        raw_text = mblog.get("raw_text")
+        fallback_content = (
+            self.clean_weibo_html(raw_text)
+            if raw_text
+            else self.clean_weibo_html(mblog.get("text", ""))
+        )
+        is_long_text = bool(mblog.get("isLongText") or mblog.get("is_long_text"))
+        if not is_long_text:
+            return fallback_content
+
+        mblog_id = str(mblog.get("id", ""))
+        if not mblog_id:
+            return f"{fallback_content}\n\n（全文获取失败：微博 ID 缺失，请打开原文查看）"
+
+        extend_url = f"https://m.weibo.cn/statuses/extend?id={mblog_id}"
+        extend_headers = dict(headers)
+        extend_headers["referer"] = f"https://m.weibo.cn/detail/{mblog_id}"
+        response = util.requests_get(
+            extend_url,
+            f"微博-查询长文-{self.name}",
+            headers=extend_headers,
+            use_proxy=True,
+        )
+        if response is not None and util.check_response_is_ok(response):
+            try:
+                result = response.json()
+                long_text = self.clean_weibo_html(
+                    (result.get("data") or {}).get("longTextContent", "")
+                )
+                if long_text:
+                    log.info(
+                        f"【微博-查询长文-{self.name}】【{mblog_id}】全文获取成功："
+                        f"摘要长度={len(fallback_content)} 全文长度={len(long_text)}"
+                    )
+                    return long_text
+            except Exception as error:
+                log.warning(
+                    f"【微博-查询长文-{self.name}】【{mblog_id}】全文解析失败：{error}"
+                )
+
+        status_code = response.status_code if response is not None else "无响应"
+        log.warning(
+            f"【微博-查询长文-{self.name}】【{mblog_id}】全文获取失败：status={status_code}，使用摘要"
+        )
+        return f"{fallback_content}\n\n（全文获取失败，请打开原文查看）"
 
     def query(self):
         if not self.enable:
@@ -135,9 +195,7 @@ class QueryWeibo(QueryTask):
                 pic_url = None
                 jump_url = None
                 if card_type == 9:
-                    text = mblog["text"]
-                    text = re.sub(r"<[^>]+>", "", text)
-                    content = mblog["raw_text"] if mblog.get("raw_text", None) is not None else text
+                    content = self.get_weibo_content(mblog, headers)
   
                     # 支持多图：优先从 mblog["pics"] 取，兜底 original_pic
                     pic_url_list = []
@@ -229,7 +287,7 @@ class QueryWeibo(QueryTask):
             return
 
         title = f"【{username}】发微博了"
-        content = f"{content[:100] + (content[100:] and '...')}[{dynamic_time}]"
+        content = f"{content}\n[{dynamic_time}]"
 
         # 兼容：Bark/Email 等通常只支持单张；NapCatQQ 支持多张（放 extend_data）
         pic_url_first = None

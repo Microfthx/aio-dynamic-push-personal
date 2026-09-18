@@ -1,4 +1,7 @@
 import json
+import time
+
+import requests
 
 from common import util
 from common.logger import log
@@ -86,12 +89,25 @@ class NapCatQQ(PushChannel):
         api_endpoint = f"{self.api_url.rstrip('/')}/send_msg"
 
         try:
-            response = util.requests_post(
-                api_endpoint,
-                self.name,
-                headers=headers,
-                data=json.dumps(payload)
-            )
+            response = None
+            max_attempts = 8
+            for attempt in range(1, max_attempts + 1):
+                with requests.Session() as session:
+                    session.trust_env = False
+                    response = session.post(
+                        api_endpoint,
+                        headers=headers,
+                        data=json.dumps(payload),
+                        timeout=10,
+                        verify=False
+                    )
+
+                if response is None or response.status_code != 502:
+                    break
+
+                if attempt < max_attempts:
+                    log.warning(f"【推送_{self.name}】NapCat 返回 502，准备重试({attempt}/{max_attempts})")
+                    time.sleep(5)
 
             if util.check_response_is_ok(response):
                 resp_data = response.json()
@@ -106,6 +122,7 @@ class NapCatQQ(PushChannel):
                     log.error(f"【推送_{self.name}】请求失败，未收到响应（可能超时或连接异常）")
                 else:
                     log.error(f"【推送_{self.name}】请求失败，状态码: {response.status_code}")
+                    log.error(f"【推送_{self.name}】响应内容: {response.text[:500]}")
 
         except Exception as e:
             log.error(f"【推送_{self.name}】发送消息时出现异常: {str(e)}")
