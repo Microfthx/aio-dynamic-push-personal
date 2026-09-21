@@ -79,6 +79,21 @@ class QueryWeibo(QueryTask):
         )
         return f"{fallback_content}\n\n（全文获取失败，请打开原文查看）"
 
+    @staticmethod
+    def get_retweeted_weibo_url(mblog):
+        if not isinstance(mblog, dict):
+            return None
+
+        retweeted_status = mblog.get("retweeted_status")
+        if not isinstance(retweeted_status, dict):
+            return None
+
+        retweeted_id = retweeted_status.get("id") or retweeted_status.get("idstr")
+        if retweeted_id in (None, ""):
+            return None
+
+        return f"https://m.weibo.cn/detail/{retweeted_id}"
+
     def query(self):
         if not self.enable:
             return
@@ -196,6 +211,9 @@ class QueryWeibo(QueryTask):
                 jump_url = None
                 if card_type == 9:
                     content = self.get_weibo_content(mblog, headers)
+                    retweeted_url = self.get_retweeted_weibo_url(mblog)
+                    if retweeted_url:
+                        content = f"{content}\n\n转发微博: {retweeted_url}"
   
                     # 支持多图：优先从 mblog["pics"] 取，兜底 original_pic
                     pic_url_list = []
