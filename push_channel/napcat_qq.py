@@ -5,6 +5,7 @@ import requests
 
 from common import util
 from common.logger import log
+from common.weibo_emoji import build_onebot_content_segments
 from . import PushChannel
 
 
@@ -34,8 +35,18 @@ class NapCatQQ(PushChannel):
     def push(self, title, content, jump_url=None, pic_url=None, extend_data=None):
         message = [{
             "type": "text",
-            "data": {"text": f"{title}\n\n{content}"}
+            "data": {"text": f"{title}\n\n"}
         }]
+
+        query_task_config = extend_data.get("query_task_config", {}) if isinstance(extend_data, dict) else {}
+        if query_task_config.get("type") == "weibo":
+            content_segments = build_onebot_content_segments(content)
+            if content_segments:
+                message.extend(content_segments)
+            else:
+                message.append({"type": "text", "data": {"text": content}})
+        else:
+            message.append({"type": "text", "data": {"text": content}})
 
         # 多图支持：优先从 extend_data["pic_url_list"] 取，其次兼容 pic_url=str/list
         pic_list = []

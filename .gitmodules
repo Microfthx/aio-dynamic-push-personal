@@ -1,0 +1,3 @@
+[submodule "vendor/weibo-emoji"]
+	path = vendor/weibo-emoji
+	url = https://github.com/LingYanSi/weibo-emoji.git
