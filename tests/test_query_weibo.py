@@ -3,6 +3,25 @@ import unittest
 from query_task.query_weibo import QueryWeibo
 
 
+class CleanWeiboHtmlTest(unittest.TestCase):
+    def test_preserves_custom_emoji_alt_text(self):
+        value = (
+            '早上好<span class="url-icon">'
+            '<img src="emoji.png" alt="[太阳]"></span>'
+            '<img alt=\'[抱一抱]\' src="emoji-2.png">'
+        )
+
+        self.assertEqual(QueryWeibo.clean_weibo_html(value), "早上好[太阳][抱一抱]")
+
+    def test_preserves_native_emoji_and_decodes_alt_entities(self):
+        value = '开心😀<img alt="&#91;允悲&#93;" src="emoji.png">'
+
+        self.assertEqual(QueryWeibo.clean_weibo_html(value), "开心😀[允悲]")
+
+    def test_discards_non_emoji_images_without_alt_text(self):
+        self.assertEqual(QueryWeibo.clean_weibo_html('<img src="photo.jpg">'), "")
+
+
 class RetweetedWeiboUrlTest(unittest.TestCase):
     def test_returns_original_weibo_url_for_retweet(self):
         mblog = {"retweeted_status": {"id": "1234567890"}}

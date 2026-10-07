@@ -24,6 +24,23 @@ class QueryWeibo(QueryTask):
     def clean_weibo_html(value):
         if not isinstance(value, str):
             return ""
+
+        def replace_image_with_alt(match):
+            image_tag = match.group(0)
+            alt_match = re.search(
+                r"\balt\s*=\s*(['\"])(.*?)\1",
+                image_tag,
+                flags=re.IGNORECASE | re.DOTALL,
+            )
+            return html.unescape(alt_match.group(2)) if alt_match else ""
+
+        # Weibo custom emoji are img tags; preserve their alt text before stripping HTML.
+        value = re.sub(
+            r"<img\b[^>]*>",
+            replace_image_with_alt,
+            value,
+            flags=re.IGNORECASE | re.DOTALL,
+        )
         value = re.sub(r"<br\s*/?>", "\n", value, flags=re.IGNORECASE)
         value = re.sub(r"</p\s*>", "\n", value, flags=re.IGNORECASE)
         value = re.sub(r"<[^>]+>", "", value)
